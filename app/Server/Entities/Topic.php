@@ -44,7 +44,7 @@ class Topic implements TopicInterface, Arrayable, Jsonable, JsonSerializable
      */
     public function uuid($uuid = null)
     {
-        return $this->property(__METHOD__, $uuid);
+        return $this->property(__FUNCTION__, $uuid);
     }
 
     /**
@@ -59,7 +59,7 @@ class Topic implements TopicInterface, Arrayable, Jsonable, JsonSerializable
      */
     public function name($name = null)
     {
-        return $this->property(__METHOD__, $name);
+        return $this->property(__FUNCTION__, $name);
     }
 
     /**
@@ -74,7 +74,7 @@ class Topic implements TopicInterface, Arrayable, Jsonable, JsonSerializable
      */
     public function subscriptions(Connections $connections = null)
     {
-        return $this->property(__METHOD__, $connections);
+        return $this->property(__FUNCTION__, $connections);
     }
 
     /**
@@ -113,9 +113,9 @@ class Topic implements TopicInterface, Arrayable, Jsonable, JsonSerializable
     public function toArray()
     {
         return array_filter([
-            'uuid'          => $this->uuid,
-            'name'          => $this->name,
-            'subscriptions' => $this->subscriptions->toArray(),
+            'name'          => $this->name(),
+            'subscriptions' => $this->subscriptions()->toArray(),
+            'uuid'          => $this->uuid(),
         ]);
     }
 }

@@ -67,7 +67,7 @@ class Manager implements ManagerInterface
      */
     public function password($password = null)
     {
-        return $this->property(__METHOD__, $password);
+        return $this->property(__FUNCTION__, $password);
     }
 
     /**
@@ -77,15 +77,26 @@ class Manager implements ManagerInterface
      */
     public function start()
     {
+        // Render the start time
         $this->start = Carbon::now();
+        $this->broker()->log('Server started at: '.$this->start->timestamp);
 
-        // $this->loop()->addPeriodicTimer(1, function () {
-        //     $this->broadcast(new CurrentUptime($this->start), $this->connections());
-        // });
+        // Demonstration of a timer where the server keeps time
+        $this->loop()->addPeriodicTimer(1, function () {
+            $this->broadcast(new CurrentUptime($this->start), $this->connections());
+        });
 
+        // Restart server every hour
+        $this->loop()->addPeriodicTimer(3600, function () {
+            $this->stop();
+        });
+
+        // Register a queue worker to process queued messages every 100ms
         $this->run(new AddQueueWorker(['timing' => 1 / 10]));
 
+        // Start the actual loop: starts blocking
         $this->loop()->run();
+        $this->broker()->log('Server stopped at: '.Carbon::now()->timestamp);
 
         return $this;
     }
@@ -239,7 +250,7 @@ class Manager implements ManagerInterface
      */
     public function connections(Connections $connections = null)
     {
-        return $this->property(__METHOD__, $connections);
+        return $this->property(__FUNCTION__, $connections);
     }
 
     /**
@@ -254,7 +265,7 @@ class Manager implements ManagerInterface
      */
     public function topics(Topics $topics = null)
     {
-        return $this->property(__METHOD__, $topics);
+        return $this->property(__FUNCTION__, $topics);
     }
 
     /**
@@ -343,7 +354,7 @@ class Manager implements ManagerInterface
      */
     public function loop(Loop $instance = null)
     {
-        return $this->property(__METHOD__, $instance);
+        return $this->property(__FUNCTION__, $instance);
     }
 
     /**
@@ -358,7 +369,7 @@ class Manager implements ManagerInterface
      */
     public function broker(BrokerInterface $instance = null)
     {
-        return $this->property(__METHOD__, $instance);
+        return $this->property(__FUNCTION__, $instance);
     }
 
     /**
@@ -373,7 +384,7 @@ class Manager implements ManagerInterface
      */
     public function connector(Queue $instance = null)
     {
-        return $this->property(__METHOD__, $instance);
+        return $this->property(__FUNCTION__, $instance);
     }
 
     /**
@@ -388,7 +399,7 @@ class Manager implements ManagerInterface
      */
     public function queue($name = null)
     {
-        return $this->property(__METHOD__, $name);
+        return $this->property(__FUNCTION__, $name);
     }
 
     /**
@@ -429,7 +440,7 @@ class Manager implements ManagerInterface
      */
     public function commands(Commands $commands = null)
     {
-        return $this->property(__METHOD__, $commands);
+        return $this->property(__FUNCTION__, $commands);
     }
 
     /**
@@ -488,7 +499,7 @@ class Manager implements ManagerInterface
      */
     public function prizes(Prizes $prizes = null)
     {
-        return $this->property(__METHOD__, $prizes);
+        return $this->property(__FUNCTION__, $prizes);
     }
 
     /**

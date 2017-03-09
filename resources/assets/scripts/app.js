@@ -6,8 +6,10 @@
 
 require('./bootstrap');
 
-window.onbeforeunload = function() {
-    return "Are you sure you want to disconnect?";
+window.onbeforeunload = function(e) {
+    let message = 'Are you sure you want to disconnect?';
+    e.returnValue = message;
+    return message;
 };
 
 window.Server;
@@ -27,6 +29,8 @@ function connect() {
         window.Event.fire('ConnectionClosed', err);
     }
 }
+
+window.Server = connect();
 
 Vue.component('stat-dropdown-item', require('./components/StatDropdownItem.vue'));
 Vue.component('stat-dropdown', require('./components/StatDropdown.vue'));
@@ -70,6 +74,7 @@ const app = new Vue({
             this.prizes = _.values(message.prizes);
         });
         Event.listen('UpdateNotifications', message => {
+            console.log(message);
             this.notifications = _.values(message.notifications);
         });
         Event.listen('UpdateTopics', message => {
@@ -114,19 +119,19 @@ const app = new Vue({
             this.reconnect(connection.uuid);
         });
         Event.listen('ConnectionClosed', err => {
-            this.connected = false;
+            this.reset();
         });
         Event.listen('ConnectionFailed', err => {
-            this.connected = false;
+            this.reset();
         });
         Event.listen('DisconnectPlayers', () => {
-            this.displayPasswordModal();
+            Server.send('DisconnectPlayers');
         });
         Event.listen('DisconnectSpectators', () => {
-            this.displayPasswordModal();
+            Server.send('DisconnectSpectators');
         });
         Event.listen('DisconnectAll', () => {
-            this.displayPasswordModal();
+            Server.send('DisconnectAll');
         });
         Event.listen('RestartServer', () => {
             Server.send('StopServer');
@@ -156,7 +161,7 @@ const app = new Vue({
             return (this.prizesTotal - this.prizesWon) + ' / ' + this.prizesTotal;
         },
         prizesWon() {
-            return _.filter(this.prizes, prize => !_.isEmpty(prize.winner)).length;
+            return _.filter(this.prizes, prize => prize.awarded === true).length;
         },
         prizesTotal() {
             return this.prizes.length;
@@ -185,7 +190,7 @@ const app = new Vue({
             uuid: '',
             name: "Anonymous",
             email: 'Not Available',
-            ipAddress: '127.0.0.1',
+            ip_address: '127.0.0.1',
             timestamp: 0,
             type: 'anonymous',
             resource_id: ''
@@ -214,7 +219,7 @@ const app = new Vue({
             'name': 'Name',
             'email': 'Email',
             'uuid': 'Connection',
-            //'ipAddress': 'IP Address',
+            'ip_address': 'IP Address',
             'timestamp': 'Time',
             'type': 'Status'
         }
@@ -234,6 +239,9 @@ const app = new Vue({
         },
         disconnect(uuid) {
             Server.close();
+            this.reset();
+        },
+        reset() {
             this.connection = {
                 uuid: '',
                 name: "Anonymous",
@@ -255,26 +263,7 @@ const app = new Vue({
             };
         },
 
-        // Prize Control Methods
-        displayAddPrizeModal() {
-            this.showAddPrizeModal = true;
-        },
-        sendNewPrize() {
-            Server.send('AddPrize', { prize: {
-                name: this.prize,
-                sponsor: this.sponsor
-            }});
-            this.showAddPrizeModal = false;
-            this.prize.name = null;
-            this.prize.sponsor = null;
-        },
-        displayWinnerPrizeModal() {
-            this.showWinnerModal = true;
-        },
-
         // Auth Control Methods
-        displayRegisterPrompt() {
-        },
         displayPasswordModal() {
             this.showPasswordModal = true;
         },
@@ -286,6 +275,23 @@ const app = new Vue({
         hidePasswordModal() {
             this.password = '';
             this.showPasswordModal = false;
-        }
+        },
+
+        // Prize Control Methods
+        displayAddPrizeModal() {
+            this.showAddPrizeModal = true;
+        },
+        sendNewPrize() {
+            Server.send('AddPrize', { prize: {
+                name: this.prize.name,
+                sponsor: this.prize.sponsor
+            }});
+            this.showAddPrizeModal = false;
+            this.prize.name = null;
+            this.prize.sponsor = null;
+        },
+        displayWinnerPrizeModal() {
+            this.showWinnerModal = true;
+        },
     }
 });

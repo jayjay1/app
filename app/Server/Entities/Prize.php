@@ -14,6 +14,7 @@ class Prize implements PrizeInterface, Arrayable, Jsonable, JsonSerializable
 {
     use FluentProperties, JsonHelpers;
 
+    protected $awarded = false;
     protected $name;
     protected $sponsor;
     protected $uuid;
@@ -44,7 +45,7 @@ class Prize implements PrizeInterface, Arrayable, Jsonable, JsonSerializable
      */
     public function uuid($uuid = null)
     {
-        return $this->property(__METHOD__, $uuid);
+        return $this->property(__FUNCTION__, $uuid);
     }
 
     /**
@@ -59,7 +60,7 @@ class Prize implements PrizeInterface, Arrayable, Jsonable, JsonSerializable
      */
     public function name($name = null)
     {
-        return $this->property(__METHOD__, $name);
+        return $this->property(__FUNCTION__, $name);
     }
 
     /**
@@ -74,7 +75,7 @@ class Prize implements PrizeInterface, Arrayable, Jsonable, JsonSerializable
      */
     public function sponsor($sponsor = null)
     {
-        return $this->property(__METHOD__, $sponsor);
+        return $this->property(__FUNCTION__, $sponsor);
     }
 
     /**
@@ -89,7 +90,22 @@ class Prize implements PrizeInterface, Arrayable, Jsonable, JsonSerializable
      */
     public function winner($uuid = null)
     {
-        return $this->property(__METHOD__, $uuid);
+        return $this->property(__FUNCTION__, $uuid);
+    }
+
+    /**
+     * Get or set the awarded status of the prize.
+     *
+     * @example awarded() ==> bool
+     *          awarded($state) ==> self
+     *
+     * @param bool $state
+     *
+     * @return bool|self
+     */
+    public function awarded($state = null)
+    {
+        return $this->property(__FUNCTION__, $state);
     }
 
     /**
@@ -100,10 +116,13 @@ class Prize implements PrizeInterface, Arrayable, Jsonable, JsonSerializable
     public function toArray()
     {
         return array_filter([
-            'uuid'    => $this->uuid,
-            'name'    => $this->name,
-            'sponsor' => $this->sponsor,
-            'winner'  => $this->winner ? $this->winner : null,
-        ]);
+            'awarded' => $this->awarded(),
+            'name'    => $this->name(),
+            'sponsor' => $this->sponsor(),
+            'uuid'    => $this->uuid(),
+            'winner'  => $this->winner() ? $this->winner() : null,
+        ], function ($value) {
+            return ((is_array($value) || is_string($value)) && ! empty($value)) || ! is_null($value);
+        });
     }
 }
